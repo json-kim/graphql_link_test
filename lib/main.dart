@@ -15,17 +15,24 @@ query AllPokemon($first: Int!) {
 }
 ''';
 
-Future<void> request() async {
-  final link = Link.from([
-    LogLink(),
-    HttpLink('https://graphql-pokemon2.vercel.app'),
-  ]);
+final link = Link.from([
+  DedupeLink(),
+  LogLink(),
+  HttpLink('https://graphql-pokemon2.vercel.app'),
+]);
 
-  final result = await GraphQLClient(link: link, cache: GraphQLCache()).query(
-      QueryOptions(
-          document: gql(pokeQuery),
-          variables: {'first': 1},
-          operationName: 'AllPokemon'));
+final client = GraphQLClient(
+    link: link,
+    cache: GraphQLCache(),
+    defaultPolicies: DefaultPolicies(
+        query: Policies(fetch: FetchPolicy.noCache),
+        mutate: Policies(fetch: FetchPolicy.noCache)));
+
+Future<void> request() async {
+  final result = await client.query(QueryOptions(
+      document: gql(pokeQuery),
+      variables: {'first': 1},
+      operationName: 'AllPokemon'));
 
   print(result);
 }
@@ -143,6 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          _incrementCounter();
           request();
         },
         tooltip: 'Increment',
