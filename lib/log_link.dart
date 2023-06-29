@@ -11,6 +11,10 @@ class LogLink extends Link {
 
     return forward!(request).map((response) {
       print('[RESPONSE] (DATA) $operationName => data: $response');
+
+      final GraphQLError error = response.errors!.first;
+
+      error.extensions?['code'];
       return response;
     }).handleError((err) {
       print('[RESPONSE] (ERROR) $operationName => error: $err');
